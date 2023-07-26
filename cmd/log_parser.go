@@ -1,11 +1,19 @@
 package main
 
 import (
-	"log_parser/internal"
-	"log_parser/logger"
+	"flag"
+	"fmt"
+	"log-parser/arguments"
+	"log-parser/internal"
+	"os"
 )
 
 func main() {
-	logger.NewLogrusLogger()
-	internal.Start()
+	args := arguments.New()
+	if err := args.Validate(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		flag.Usage()
+		os.Exit(2)
+	}
+	internal.Start(args)
 }
