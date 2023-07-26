@@ -2,10 +2,8 @@ package internal
 
 import (
 	"bufio"
-	"fmt"
+	"bytes"
 	"os"
-
-	"golang.org/x/exp/slices"
 )
 
 type Predicate = func(templateText string, readedText string) bool
@@ -15,55 +13,39 @@ type Predicate = func(templateText string, readedText string) bool
 // Source: asd, anagramma: dsa, checked templates: asd, dsa.
 type TemplateTransformer = func(templateText string) []string
 
-func parseFile(path string, predicate Predicate, templateTransformer TemplateTransformer) (map[string][]int, error) {
-	var (
-		index            int = 1
-		file             *os.File
-		parseResult      []int
-		checkedTemplates []string
-		result           map[string][]int = make(map[string][]int)
-		err              error
+func parseFile(title string, path string, predicate Predicate, templateTransformer TemplateTransformer) error {
+	const (
+		maxWorks   = 10
+		maxWorkers = 3
 	)
-	if file, err = os.Open(path); err != nil {
-		return nil, err
+	var (
+		file []byte
+		err  error
+	)
+	if file, err = os.ReadFile(path); err != nil {
+		return err
 	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		template := scanner.Text()
-		// Already find this template
-		if slices.Contains(checkedTemplates, template) {
-			index += 1
-			continue
-		}
-		if parseResult, err = find(path, index, template, predicate); err != nil {
-			return nil, err
-		}
-		if len(parseResult) > 0 {
-			checkedTemplates = append(checkedTemplates, templateTransformer(template)...)
-			result[fmt.Sprintf("%s, line:%d", template, index)] = parseResult
-		}
-		index += 1
+	works := make(chan SearchWork, maxWorks)
+	results := make(chan SearchResult, maxWorks)
+	scanner := bufio.NewScanner(bytes.NewReader(file))
+	go findWorker(file, works, predicate, templateTransformer, results)
+	scanFile(scanner, works)
+	close(works)
+	for result := range results {
+		printResult(title, result)
 	}
-	return result, nil
+	return nil
 }
 
-func find(path string, i int, templVal string, predicate Predicate) (results []int, err error) {
-	var (
-		index int = 1
-		file  *os.File
-	)
-	if file, err = os.Open(path); err != nil {
-		return
-	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
+func scanFile(scanner *bufio.Scanner, works chan<- SearchWork) {
+	index := 1
 	for scanner.Scan() {
-		rdText := scanner.Text()
-		if index != i && predicate(templVal, rdText) {
-			results = append(results, index)
+		template := scanner.Text()
+		works <- SearchWork{
+			template: template,
+			line:     index,
 		}
 		index += 1
 	}
-	return
+
 }

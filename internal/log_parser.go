@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const Version = "0.0.1"
+const Version = "0.0.2"
 
 func Start(args *arguments.Arguments) {
 	fmt.Println("log-parser", Version)
@@ -27,32 +27,23 @@ func Start(args *arguments.Arguments) {
 }
 
 func findDuplicates(path string) error {
-	var (
-		result map[string][]int
-		err    error
-	)
-	if result, err = parseFile(path, duplicatePredicate, duplicateTransformer); err != nil {
+
+	if err := parseFile(duplicateMode, path, duplicatePredicate, duplicateTransformer); err != nil {
 		return fmt.Errorf("error reading file. Reason: %s", err)
 
 	}
-	printResult(duplicateMode, result)
 	return nil
 }
 
 func findAnagrammas(path string) error {
-	var (
-		result map[string][]int
-		err    error
-	)
-	if result, err = parseFile(path, anagrammasPredicate, anagrammasTransformer); err != nil {
-		return fmt.Errorf("error reading file. Reason: %s", err)
 
+	if err := parseFile(anagrammasMode, path, anagrammasPredicate, anagrammasTransformer); err != nil {
+		return fmt.Errorf("error reading file. Reason: %s", err)
 	}
-	printResult(anagrammasMode, result)
 	return nil
 }
 
-func printResult(title string, result map[string][]int) {
+func printResult(title string, result SearchResult) {
 	lineNumberPrinter := func(numbers []int) string {
 		var numbersString []string
 		for _, number := range numbers {
@@ -61,8 +52,6 @@ func printResult(title string, result map[string][]int) {
 		return strings.Join(numbersString, ", ")
 	}
 
-	for text, lines := range result {
-		fmt.Fprintf(os.Stdout, "Record: %s, %s on lines: %s\n", text, title, lineNumberPrinter(lines))
-	}
+	fmt.Fprintf(os.Stdout, "Record: %s, line:%d, %s on lines: %s\n", result.template, result.line, title, lineNumberPrinter(result.duplicates))
 
 }
