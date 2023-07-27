@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log-parser/arguments"
 	"os"
-	"strconv"
-	"strings"
 )
 
 const Version = "0.0.2"
@@ -41,17 +39,4 @@ func findAnagrammas(path string) error {
 		return fmt.Errorf("error reading file. Reason: %s", err)
 	}
 	return nil
-}
-
-func printResult(title string, result SearchResult) {
-	lineNumberPrinter := func(numbers []int) string {
-		var numbersString []string
-		for _, number := range numbers {
-			numbersString = append(numbersString, strconv.Itoa(number))
-		}
-		return strings.Join(numbersString, ", ")
-	}
-
-	fmt.Fprintf(os.Stdout, "Record: %s, line:%d, %s on lines: %s\n", result.template, result.line, title, lineNumberPrinter(result.duplicates))
-
 }
