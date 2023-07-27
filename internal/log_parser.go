@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const Version = "0.0.2"
+const Version = "0.0.3"
 
 func Start(args *arguments.Arguments) {
 	fmt.Println("log-parser", Version)
@@ -25,17 +25,14 @@ func Start(args *arguments.Arguments) {
 }
 
 func findDuplicates(path string) error {
-
-	if err := parseFile(duplicateMode, path, duplicatePredicate, duplicateTransformer); err != nil {
+	if err := parseFile(arguments.Duplicates, path); err != nil {
 		return fmt.Errorf("error reading file. Reason: %s", err)
-
 	}
 	return nil
 }
 
 func findAnagrammas(path string) error {
-
-	if err := parseFile(anagrammasMode, path, anagrammasPredicate, anagrammasTransformer); err != nil {
+	if err := parseFile(arguments.Anagrammas, path); err != nil {
 		return fmt.Errorf("error reading file. Reason: %s", err)
 	}
 	return nil

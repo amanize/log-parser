@@ -1,14 +1,22 @@
 package internal
 
-const (
-	duplicateMode  = "duplicates"
-	anagrammasMode = "anagrammas"
+import (
+	"fmt"
+	"strings"
 )
 
-func reverseSwapRunes(s string) string {
-	chars := []rune(s)
-	for i, j := 0, len(chars)-1; i < j; i, j = i+1, j-1 {
-		chars[i], chars[j] = chars[j], chars[i]
+func removeDuplicate[T string | int](sliceList []T) []T {
+	allKeys := make(map[T]bool)
+	list := []T{}
+	for _, item := range sliceList {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
 	}
-	return string(chars)
+	return list
+}
+
+func arrayToString(a []int, delim string) string {
+	return strings.Trim(strings.Replace(fmt.Sprint(a), " ", delim, -1), "[]")
 }

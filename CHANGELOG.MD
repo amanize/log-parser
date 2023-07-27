@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.3
+
+- Change
+  - simplify search of duplicates.
+- Fix
+  - search of anagramms, not palindorms.
+
 ## 0.0.2
 
 - Change
